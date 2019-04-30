@@ -138,6 +138,21 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
+
+/**
+ *
+ *
+ * @export
+ * @param {Component} vm
+ * @param {?Element} el
+ * @param {boolean} [hydrating]
+ * @returns {Component}
+ * @description 1. 确定必须要有 render 方法
+ *              2. 封装 updateComponent 方法传给 Watch 处理
+ *              3. updateComponent 中核心的是执行了 _render 和 _update 方法，_render 是将 $options.render 中
+ *                 dom 配置信息转成 vdom，_update 是将 vdom 进行真实的 dom 处理，注意这里_render 和 _update 是
+ *                 执行了的
+ */
 export function mountComponent (
   vm: Component,
   el: ?Element,

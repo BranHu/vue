@@ -68,6 +68,7 @@ export function renderMixin (Vue: Class<Component>) {
 
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
+    // 将 $options 中的 this.$options.render 函数结构赋值给了这里的 render
     const { render, _parentVnode } = vm.$options
 
     if (_parentVnode) {
@@ -80,6 +81,7 @@ export function renderMixin (Vue: Class<Component>) {
 
     // set parent vnode. this allows render functions to have access
     // to the data on the placeholder node.
+    // 注意这里实例上的 $vnode 它会在后面多处出现，其实就是父组件的 vnode
     vm.$vnode = _parentVnode
     // render self
     let vnode
@@ -88,6 +90,8 @@ export function renderMixin (Vue: Class<Component>) {
       // separately from one another. Nested component's render fns are called
       // when parent component is patched.
       currentRenderingInstance = vm
+      // render 函数调用，入参是 vm.$createElement，这里就不难理解在写 render 函数中可以通过 render(createElement) 
+      // 中的 createElement 来创建 dom了，实际上这里的 createElement 就是 vm.$createElement
       vnode = render.call(vm._renderProxy, vm.$createElement)
     } catch (e) {
       handleError(e, vm, `render`)
