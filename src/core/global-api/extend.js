@@ -15,9 +15,12 @@ export function initExtend (Vue: GlobalAPI) {
 
   /**
    * Class inheritance
+   * 注意它的返回值是在内部声明的 Sub
    */
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
+    // extend 是直接挂在 Vue 构造函数上的，它是全局变量
+    // 这里的 this 指向 Vue，即父类是 Vue
     const Super = this
     const SuperId = Super.cid
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
@@ -31,9 +34,14 @@ export function initExtend (Vue: GlobalAPI) {
     }
 
     const Sub = function VueComponent (options) {
+      // 和 Vue 一样，在 new 的时候 _init 会被调用
       this._init(options)
     }
+    // 原型创建子类, 原型继承
+    // The Object.create() method creates a new object, using an existing object as the prototype of the newly created object.
+    // Sub.prototype.prototype = Super.prototype
     Sub.prototype = Object.create(Super.prototype)
+    // 直接给某个对象的 prototype 赋值会丢失 constructor 属性，因此这里给它重新绑定值
     Sub.prototype.constructor = Sub
     Sub.cid = cid++
     Sub.options = mergeOptions(

@@ -53,7 +53,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
       if (c.length > 0) {
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)
         // merge adjacent text nodes
-        if (isTextNode(c[0]) && isTextNode(last)) {
+        if (isTextNode(c[0]) && isTextNode(last)) { // 如果第一个和最后一个都为 text 的 vnode
           res[lastIndex] = createTextVNode(last.text + (c[0]: any).text)
           c.shift()
         }

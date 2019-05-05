@@ -29,14 +29,20 @@ export function initMixin (Vue: Class<Component>) {
     // a flag to avoid this being observed
     vm._isVue = true
     // merge options
+    // options 上的 _isComponent 用来判断是否是组件，如果是组件就调用 
+    // initInternalComponent(vm, options) 方法
+    // 
     if (options && options._isComponent) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
       initInternalComponent(vm, options)
     } else {
+      // 初始的时候是走的这一个分支
+      // 将 Vue 构造函数上的 options 和 自定义的 options 进行合并
       vm.$options = mergeOptions(
-        resolveConstructorOptions(vm.constructor),
+        // 有父类 super 的话讲父类的 options 也合并进来
+        resolveConstructorOptions(vm.constructor), 
         options || {},
         vm
       )
@@ -51,11 +57,10 @@ export function initMixin (Vue: Class<Component>) {
     vm._self = vm
     initLifecycle(vm)
     initEvents(vm)
-    // vm 实例上添加 $createElement 
-    initRender(vm)
+    initRender(vm) // vm 实例上添加 $createElement 
     callHook(vm, 'beforeCreate')
     initInjections(vm) // resolve injections before data/props
-    initState(vm)
+    initState(vm) // initProps, initMethods, initData 然后进行响应式绑定
     initProvide(vm) // resolve provide after data/props
     callHook(vm, 'created')
 
@@ -67,8 +72,8 @@ export function initMixin (Vue: Class<Component>) {
     }
 
     if (vm.$options.el) {
-      // 查看 dom 是如何由 render 中的配置形式转成 dom 并最终挂在到  el 上要看这里的 $mount 方法
-      // 其实质是调用的是 lifecycle.js 中的 mountComponent 方法
+      // 查看 dom 是如何由 render 中的配置形式转成 dom 并最终挂在到 el 上的，需要看这里的 $mount 方法
+      // 它的实质是调用的是 lifecycle.js 中的 mountComponent 方法
       // 文件路径为 web/runtime/index.js 中
       vm.$mount(vm.$options.el)
     }
@@ -94,8 +99,13 @@ export function initInternalComponent (vm: Component, options: InternalComponent
   }
 }
 
+// 在 _init 方法中 vm.$options = mergeOptions(resolveConstructorOptions(vm.constructor), options || {}, vm)
+// Vue 构造函数上有 options 的静态属性，在 global-api 目录中
+// 静态的 options 上有如 _base, 'component', 'directive', 'filter', 即 vue 内部会提供一些组件，directive，和过滤器
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
+  // 后面只要是涉及到 super , 不理解的地方可以查看 global-api 目录的 extend.js 文件，即该文件涉及到 vue 的拓展及继承
+  // 这里也是添加 super 的地方
   if (Ctor.super) {
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions
@@ -107,6 +117,8 @@ export function resolveConstructorOptions (Ctor: Class<Component>) {
       const modifiedOptions = resolveModifiedOptions(Ctor)
       // update base extend options
       if (modifiedOptions) {
+        // 这里用到时工具函数 extend，它的实质是运用 for in 循环，将第二个对象参数的属性添加到
+        // 第一个对象参数上，即补充第一个参数的属性
         extend(Ctor.extendOptions, modifiedOptions)
       }
       options = Ctor.options = mergeOptions(superOptions, Ctor.extendOptions)

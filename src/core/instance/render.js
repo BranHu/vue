@@ -31,7 +31,7 @@ export function initRender (vm: Component) {
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
-  vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
+  vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true) // 将 vm 实例传入，相当于里面的 context
 
   // $attrs & $listeners are exposed for easier HOC creation.
   // they need to be reactive so that HOCs using them are always updated
@@ -66,6 +66,8 @@ export function renderMixin (Vue: Class<Component>) {
     return nextTick(fn, this)
   }
 
+  // _render 方法实质上是调用的使用过程中的 render() 方法，同时将 $createElement 抛出
+  // 而 $createElement 等于是调用的 createElement，后面的就看 vdom 目录了
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
     // 将 $options 中的 this.$options.render 函数结构赋值给了这里的 render

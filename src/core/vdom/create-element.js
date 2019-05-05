@@ -25,6 +25,19 @@ const ALWAYS_NORMALIZE = 2
 
 // wrapper function for providing a more flexible interface
 // without getting yelled at by flow
+
+/**
+ *
+ *
+ * @export
+ * @param {Component} context vm 实例
+ * @param {*} tag 一个 HTML 标签名、组件选项对象
+ * @param {*} data {Object} 模板中属性对应的数据对象，如 'class', style等，见 api 文档
+ * @param {*} children {String | Array} 子级虚拟节点 
+ * @param {*} normalizationType
+ * @param {boolean} alwaysNormalize
+ * @returns {(VNode | Array<VNode>)}
+ */
 export function createElement (
   context: Component,
   tag: any,
@@ -33,6 +46,9 @@ export function createElement (
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // isPrimitive 用来判断是否为 JS 中的基础类型，如 string，number, boolean, symbol等
+  // 即当 data 不是对象，而是数组(相当于没有 data 配置，这里的 data 就相当于第二个参数是 children)
+  // 或上面的基础类型(相当于直接是文本)时做出相应的设置
   if (Array.isArray(data) || isPrimitive(data)) {
     normalizationType = children
     children = data
@@ -51,6 +67,7 @@ export function _createElement (
   children?: any,
   normalizationType?: number
 ): VNode | Array<VNode> {
+  // isDef 工具函数是判断不为 undefined 和 null
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
@@ -87,11 +104,14 @@ export function _createElement (
     data.scopedSlots = { default: children[0] }
     children.length = 0
   }
+
+  // 规范 children
   if (normalizationType === ALWAYS_NORMALIZE) {
     children = normalizeChildren(children)
   } else if (normalizationType === SIMPLE_NORMALIZE) {
     children = simpleNormalizeChildren(children)
   }
+
   let vnode, ns
   if (typeof tag === 'string') {
     let Ctor

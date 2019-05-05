@@ -25,11 +25,13 @@ import {
  * Option overwriting strategies are functions that handle
  * how to merge a parent option value and a child option
  * value into the final value.
+ * 目前是一个空对象
  */
 const strats = config.optionMergeStrategies
 
 /**
  * Options with restrictions
+ * 给 strats 添加 el, propsData
  */
 if (process.env.NODE_ENV !== 'production') {
   strats.el = strats.propsData = function (parent, child, vm, key) {
@@ -118,6 +120,7 @@ export function mergeDataOrFn (
   }
 }
 
+// strats 上添加 data
 strats.data = function (
   parentVal: any,
   childVal: any,
@@ -169,6 +172,19 @@ function dedupeHooks (hooks) {
   return res
 }
 
+// strats 添加一些钩子 hook 属性, 注意这里的 mergeHook
+// 'beforeCreate',
+// 'created',
+// 'beforeMount',
+// 'mounted',
+// 'beforeUpdate',
+// 'updated',
+// 'beforeDestroy',
+// 'destroyed',
+// 'activated',
+// 'deactivated',
+// 'errorCaptured',
+// 'serverPrefetch'
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
@@ -195,6 +211,7 @@ function mergeAssets (
   }
 }
 
+// strats 添加一些公有属性 components， directives，filters，注意这里的 mergeAssets
 ASSET_TYPES.forEach(function (type) {
   strats[type + 's'] = mergeAssets
 })
@@ -204,6 +221,7 @@ ASSET_TYPES.forEach(function (type) {
  *
  * Watchers hashes should not overwrite one
  * another, so we merge them as arrays.
+ * strats 添加 watch
  */
 strats.watch = function (
   parentVal: ?Object,
@@ -217,6 +235,7 @@ strats.watch = function (
   /* istanbul ignore if */
   if (!childVal) return Object.create(parentVal || null)
   if (process.env.NODE_ENV !== 'production') {
+    // 判断 childVal 是否为一个 object 对象
     assertObjectType(key, childVal, vm)
   }
   if (!parentVal) return childVal
@@ -237,6 +256,7 @@ strats.watch = function (
 
 /**
  * Other object hashes.
+ * strats 添加 props，methods，inject，computed，provide
  */
 strats.props =
 strats.methods =
@@ -250,7 +270,9 @@ strats.computed = function (
   if (childVal && process.env.NODE_ENV !== 'production') {
     assertObjectType(key, childVal, vm)
   }
+  // 如果 parentVal 不存在则返回 childVal
   if (!parentVal) return childVal
+  // 创建一个新对象 ret，将 parentVal 和 childVal 的属性都拷贝到这个新对象上去(parentVal和childVal都是Object)
   const ret = Object.create(null)
   extend(ret, parentVal)
   if (childVal) extend(ret, childVal)
@@ -428,6 +450,9 @@ export function mergeOptions (
     }
   }
   function mergeField (key) {
+    // defaultStrat 是一个 function, 它的逻辑是如果有 childVal 则返回 childVal，如果没有则返回 parentVal
+    // strats 如上是一个对象，添加了众多的处理函数，如 props，methods，computed 等是一个相同的函数
+    // 所有的周期函数是 mergeHook
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
   }
