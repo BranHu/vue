@@ -109,9 +109,11 @@ export function createComponent (
     return
   }
 
+  // baseCtor 是 Vue 构造函数
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  // 如果 Ctor 是一个对象，那么让它继承 Vue 成为 Vue 的子类
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }

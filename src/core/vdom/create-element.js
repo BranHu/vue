@@ -31,7 +31,7 @@ const ALWAYS_NORMALIZE = 2
  *
  * @export
  * @param {Component} context vm 实例
- * @param {*} tag 一个 HTML 标签名、组件选项对象
+ * @param {*} tag {String | Object | Function} 一个 HTML 标签名、组件选项对象
  * @param {*} data {Object} 模板中属性对应的数据对象，如 'class', style等，见 api 文档
  * @param {*} children {String | Array} 子级虚拟节点 
  * @param {*} normalizationType
@@ -61,7 +61,7 @@ export function createElement (
 }
 
 export function _createElement (
-  context: Component,
+  context: Component, // 为当前的 vm 实例
   tag?: string | Class<Component> | Function | Object,
   data?: VNodeData,
   children?: any,
@@ -114,6 +114,9 @@ export function _createElement (
 
   let vnode, ns
   if (typeof tag === 'string') {
+    // tag 为字符串的时候，有几种情况
+    // 一种是为 html 中的自有标签，如 div
+    // 另一种情况生命的组件名如 element-tag
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
     if (config.isReservedTag(tag)) {
@@ -123,6 +126,13 @@ export function _createElement (
         undefined, undefined, context
       )
     } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
+      // 上面的核心判断语句 Ctor = resolveAsset(context.$options, 'components', tag)
+      // resolveAsset 的作用是来判断 context.$options.components 对象上是否有 tag 对应的属性，即组件名
+      // 实质用的是 prototype 上的 hasOwnProperty 属性，它的作用是判断选择的对象是否有特定的自身属性，会忽略掉
+      // 原型上的属性
+      // 这里会同时会处理 camelized 形式，capitalized 形式，因此我们在 render 函数中可以 element-tag 形式
+      // 也可以 elementTag 形式，
+      // Ctor 是返回的已注册的组件对象
       // component
       vnode = createComponent(Ctor, data, context, children, tag)
     } else {
@@ -136,6 +146,7 @@ export function _createElement (
     }
   } else {
     // direct component options / constructor
+    // 非字符串的情况有即有可能直接为组件对象，这里的 tag 为组件对象
     vnode = createComponent(tag, data, context, children)
   }
   if (Array.isArray(vnode)) {
