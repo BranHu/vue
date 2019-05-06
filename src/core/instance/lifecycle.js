@@ -56,14 +56,21 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // render 函数在通过 createElement 方法转成 vnode 后需要通过执行 _update 方法进行 dom 的增删改查
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
+    // pre 表示之前的意思，这里就做一个缓存
     const prevEl = vm.$el
-    const prevVnode = vm._vnode
+    const prevVnode = vm._vnode // _vnode 在 initRender 方法中设置了 null
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
+    // __patch__ 同 $mount 一样在 platforms/web/runtime/index.js 目录下添加到 prototype 上的
+    // Vue.prototype.__patch__ = inBrowser ? patch : noop
+    // 这里的 patch 方法是 import 的 platforms/web/runtime/patch.js 文件中的，在该文件中有
+    // patch = createPatchFunction({ nodeOps, modules }), createPatchFunction 来自 vdom 目录下的 patch.js
+    // createPatchFunction 的返回值是 function patch(oldVnode, vnode, hydrating, removeOnly) {}
     if (!prevVnode) {
       // initial render
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)

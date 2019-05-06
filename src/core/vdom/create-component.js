@@ -100,7 +100,7 @@ const hooksToMerge = Object.keys(componentVNodeHooks)
 
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
-  data: ?VNodeData,
+  data: ?VNodeData, // render 函数中的 data 数据对象
   context: Component,
   children: ?Array<VNode>,
   tag?: string
@@ -185,10 +185,14 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
+  // 这里安装 component 的整个过程钩子，注意这里的 data 是 render 的数据对象
+  // 那么这里 data 数据对象就拥有了 hook 属性，即 vnode 的 init 等方法
   installComponentHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
+  // 注意这里的 { Ctor, propsData, listeners, tag, children }，注意它在这里赋值给了 vnode 
+  // 的 componentOptions 属性，可以去查看 vnode 类
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
@@ -222,16 +226,22 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  // 这里的 vnode.componentOptions 是在本文件中的 createComponent 方法中 new 组件 Vnode 时传入的
+  // 它就是 Ctor = baseCtor.extend(Ctor) 即 Vue 的子类 Sub
   return new vnode.componentOptions.Ctor(options)
 }
 
 function installComponentHooks (data: VNodeData) {
+  // hook 没有对外提供，是内部的钩子，初始的时候给 hook 赋值为 {}
   const hooks = data.hook || (data.hook = {})
+  // hooksToMerge 是这里的一个全局变量，是一个数组 [init, prepatch, insert, destroy]
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]
-    const existing = hooks[key]
-    const toMerge = componentVNodeHooks[key]
+    const existing = hooks[key] // 初始状态下为 undefined
+    const toMerge = componentVNodeHooks[key] // componentVNodeHooks上对应的 init, prepatch, insert 等方法，类型是 function
     if (existing !== toMerge && !(existing && existing._merged)) {
+      // 因为 hooks = data.hook = {}, 那么这里给 hooks 添加 init, prepatch, insert等方法时
+      // 也等价于 data.hook 上也有了
       hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
     }
   }

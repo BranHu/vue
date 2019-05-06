@@ -73,8 +73,9 @@ export function initMixin (Vue: Class<Component>) {
 
     if (vm.$options.el) {
       // 查看 dom 是如何由 render 中的配置形式转成 dom 并最终挂在到 el 上的，需要看这里的 $mount 方法
-      // 它的实质是调用的是 lifecycle.js 中的 mountComponent 方法
-      // 文件路径为 web/runtime/index.js 中
+      // 它的实质调用的是 lifecycle.js 中的 mountComponent 方法，mountComponent 是重点
+      // $mount 的绑定在路径为 web/runtime/index.js 文件中
+      // mountComponent 在 lifecycle.js 文件内，其中就有执行了时间钩子 beforeMount 和 mounted
       vm.$mount(vm.$options.el)
     }
   }

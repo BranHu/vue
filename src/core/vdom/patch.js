@@ -67,6 +67,14 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
   return map
 }
 
+
+/**
+ *
+ *
+ * @export
+ * @param {*} backend
+ * @returns 这里需要特别注意 return 的内容，它是 function patch(oldVnode, vnode, hydrating, removeOnly) {}
+ */
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
@@ -141,6 +149,7 @@ export function createPatchFunction (backend) {
     }
 
     vnode.isRootInsert = !nested // for transition enter check
+    // 如果是组件的情况下走下面这个 if 分支然后就 return 了
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
@@ -208,10 +217,14 @@ export function createPatchFunction (backend) {
   }
 
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
+    // 这里的 i 是 vnode 中的数据对象
+    // 如果是组件，按照之前在 vnode 目录下的 create-component.js 文件中给 data 添加了 hook 全过程的钩子
+    // 那么在这里就很明显了
     let i = vnode.data
     if (isDef(i)) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       if (isDef(i = i.hook) && isDef(i = i.init)) {
+        // 这里的 i 即 hook 上的 init 方法，
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component

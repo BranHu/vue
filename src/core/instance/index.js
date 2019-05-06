@@ -21,13 +21,10 @@ function Vue (options) {
   this._init(options)
 }
 
-// Vue 的原型上添加 _init 方法
-initMixin(Vue)
-stateMixin(Vue)
-eventsMixin(Vue)
-// Vue 原型上添加了 _update, $forceUpdate, $destroy 方法
-lifecycleMixin(Vue)
-// Vue 原型上添加了 $nextTick、_render 方法
-renderMixin(Vue)
+initMixin(Vue) // Vue 的原型上添加 _init 方法
+stateMixin(Vue) // Vue 原型上添加 $watch, $set, $delete 方法
+eventsMixin(Vue) // Vue 原型上添加了 $emit, $on, $off 等方法
+lifecycleMixin(Vue) // Vue 原型上添加了 _update, $forceUpdate, $destroy 方法
+renderMixin(Vue) // Vue 原型上添加了 $nextTick、_render 方法
 
 export default Vue
