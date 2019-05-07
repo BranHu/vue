@@ -22,6 +22,7 @@ let uid = 0
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
+ * 响应式的入口在 state.js 文件中
  */
 export default class Watcher {
   vm: Component;
@@ -77,6 +78,7 @@ export default class Watcher {
       : ''
     // parse expression for getter
     if (typeof expOrFn === 'function') {
+      // 这里的 expOrFn 是 mountComponent 封装好的 updateComponent 方法
       this.getter = expOrFn
     } else {
       this.getter = parsePath(expOrFn)

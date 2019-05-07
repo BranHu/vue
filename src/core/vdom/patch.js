@@ -225,14 +225,18 @@ export function createPatchFunction (backend) {
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
       if (isDef(i = i.hook) && isDef(i = i.init)) {
         // 这里的 i 即 hook 上的 init 方法，
+        // child.$mount(hydrating ? vnode.elm : undefined, hydrating)
+        // 这里的 child 是 new vnode.componentOptions.Ctor(options)， 即子类的 Sub new 了一个对象
         i(vnode, false /* hydrating */)
       }
       // after calling the init hook, if the vnode is a child component
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
+      // 在 init 中 child = vnode.componentInstance
       if (isDef(vnode.componentInstance)) {
         initComponent(vnode, insertedVnodeQueue)
+        // 实际的 dom 操作，将 vnode.elm 插入到 parentElm 中
         insert(parentElm, vnode.elm, refElm)
         if (isTrue(isReactivated)) {
           reactivateComponent(vnode, insertedVnodeQueue, parentElm, refElm)
@@ -724,6 +728,7 @@ export function createPatchFunction (backend) {
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
+      // initial render oldVnode 传入的是真实的 dom，vm.$el
       const isRealElement = isDef(oldVnode.nodeType)
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
